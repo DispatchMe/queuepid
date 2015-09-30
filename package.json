@@ -7,7 +7,7 @@
     "test": "mocha --compilers js:babel/register --recursive lib/**/*_test.js",
     "test-cover": "node_modules/.bin/istanbul cover _mocha -- --compilers js:babel/register --recursive lib/**/*_test.js",
     "test-watch": "npm test -- --watch",
-    "build": "node_modules/.bin/babel lib --out-dir dist"
+    "build": "rm -rf dist/** && node_modules/.bin/babel lib --out-dir dist --ignore _test.js"
   },
   "engines": {
     "node": ">=4.0.0"
