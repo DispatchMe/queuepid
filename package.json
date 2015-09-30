@@ -1,0 +1,30 @@
+{
+  "name": "queuepid",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "mocha --compilers js:babel/register --recursive lib/**/*_test.js",
+    "test-cover": "node_modules/.bin/istanbul cover _mocha -- --compilers js:babel/register --recursive lib/**/*_test.js",
+    "test-watch": "npm test -- --watch",
+    "build": "node_modules/.bin/babel lib --out-dir dist"
+  },
+  "engines": {
+    "node": ">=4.0.0"
+  },
+  "author": "Jason Raede",
+  "license": "MIT",
+  "devDependencies": {
+    "babel": "^5.8.23",
+    "chai": "^3.3.0",
+    "expect": "^1.11.1",
+    "istanbul": "^0.3.21",
+    "mocha": "^2.3.3"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.2.5",
+    "hat": "0.0.3",
+    "mongodb": "^2.0.44",
+    "simplecheck": "0.0.3"
+  }
+}
