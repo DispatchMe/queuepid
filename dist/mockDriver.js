@@ -1,3 +1,4 @@
+/* jshint esnext:true */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {

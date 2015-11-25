@@ -1,3 +1,4 @@
+/* jshint esnext:true */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -46,12 +47,23 @@ var Job = (function (_EventEmitter) {
       if (this.info) return Promise.resolve(this.info);
 
       return new Promise(function (resolve, reject) {
-        _this._collection.findOne({ _id: _this._messageData.jobId }, function (err, doc) {
+        _this._collection.findOne({
+          _id: _this._messageData.jobId
+        }, function (err, doc) {
           if (err) reject(err);else {
             _this.info = doc;
             resolve(doc);
           }
         });
+      });
+    }
+  }, {
+    key: 'log',
+    value: function log() {
+      // Don't save...it will save when we update the status with any logs that were added.
+      this.info.log.push({
+        timestamp: new Date(),
+        message: Array.prototype.slice.call(arguments)
       });
     }
   }, {
@@ -234,7 +246,9 @@ var Queue = (function () {
       var _this8 = this;
 
       return new Promise(function (resolve, reject) {
-        _this8._collection.findOne({ _id: msgId }, function (err, doc) {
+        _this8._collection.findOne({
+          _id: msgId
+        }, function (err, doc) {
           if (err) reject(err);else resolve(doc);
         });
       });
@@ -267,7 +281,8 @@ var Queue = (function () {
           createdAt: Date.now(),
           status: 'queued',
           retries: 0,
-          retryLimit: 10
+          retryLimit: 10,
+          log: []
         }, function (err, data) {
           if (err) reject(err);else {
             id = data.ops[0]._id;
