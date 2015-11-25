@@ -21,6 +21,8 @@ var _mongodb = require('mongodb');
 
 var _events = require('events');
 
+var _es6PromisePolyfill = require('es6-promise-polyfill');
+
 var Job = (function (_EventEmitter) {
   _inherits(Job, _EventEmitter);
 
@@ -44,9 +46,9 @@ var Job = (function (_EventEmitter) {
     value: function getMeta() {
       var _this = this;
 
-      if (this.info) return Promise.resolve(this.info);
+      if (this.info) return _es6PromisePolyfill.Promise.resolve(this.info);
 
-      return new Promise(function (resolve, reject) {
+      return new _es6PromisePolyfill.Promise(function (resolve, reject) {
         _this._collection.findOne({
           _id: _this._messageData.jobId
         }, function (err, doc) {
@@ -117,7 +119,7 @@ var Job = (function (_EventEmitter) {
         modify.$set.completedAt = Date.now();
       }
 
-      return new Promise(function (resolve, reject) {
+      return new _es6PromisePolyfill.Promise(function (resolve, reject) {
         _this2._collection.update({
           _id: _this2.info._id
         }, modify, function (err, data) {
@@ -136,7 +138,7 @@ var Job = (function (_EventEmitter) {
     value: function save() {
       var _this3 = this;
 
-      return new Promise(function (resolve, reject) {
+      return new _es6PromisePolyfill.Promise(function (resolve, reject) {
         _this3._collection.update({
           _id: _this3.info._id
         }, {
@@ -198,7 +200,7 @@ var Queue = (function () {
     value: function connect() {
       var _this5 = this;
 
-      return new Promise(function (resolve, reject) {
+      return new _es6PromisePolyfill.Promise(function (resolve, reject) {
         _mongodb.MongoClient.connect(_this5.config.mongoUrl, function (err, db) {
           if (err) reject(err);else {
             _this5._db = db;
@@ -218,7 +220,7 @@ var Queue = (function () {
     value: function purge() {
       var _this6 = this;
 
-      return new Promise(function (resolve, reject) {
+      return new _es6PromisePolyfill.Promise(function (resolve, reject) {
         _this6._collection.remove({}, function (err) {
           if (err) reject(err);else resolve();
         });
@@ -230,7 +232,7 @@ var Queue = (function () {
       var _this7 = this;
 
       var statusKey = status + 'At';
-      return new Promise(function (resolve, reject) {
+      return new _es6PromisePolyfill.Promise(function (resolve, reject) {
         _this7._collection.update({
           _id: msgId
         }, _defineProperty({
@@ -245,7 +247,7 @@ var Queue = (function () {
     value: function getMeta(msgId) {
       var _this8 = this;
 
-      return new Promise(function (resolve, reject) {
+      return new _es6PromisePolyfill.Promise(function (resolve, reject) {
         _this8._collection.findOne({
           _id: msgId
         }, function (err, doc) {
@@ -275,7 +277,7 @@ var Queue = (function () {
 
       var id = undefined;
       // Insert into the jobs collection...
-      return new Promise(function (resolve, reject) {
+      return new _es6PromisePolyfill.Promise(function (resolve, reject) {
         _this10._collection.insert({
           data: data,
           createdAt: Date.now(),

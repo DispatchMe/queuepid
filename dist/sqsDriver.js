@@ -12,6 +12,8 @@ var _awsSdk = require('aws-sdk');
 
 var _simplecheck = require('simplecheck');
 
+var _es6PromisePolyfill = require('es6-promise-polyfill');
+
 var SQSDriver = (function () {
   function SQSDriver(config) {
     _classCallCheck(this, SQSDriver);
@@ -37,7 +39,7 @@ var SQSDriver = (function () {
         DelaySeconds: delay
       };
 
-      return Promise(function (resolve, reject) {
+      return (0, _es6PromisePolyfill.Promise)(function (resolve, reject) {
         _this._client.sendMessage(params, function (err, data) {
           if (err) reject(err);else resolve(data);
         });
@@ -56,7 +58,7 @@ var SQSDriver = (function () {
         WaitTimeSeconds: 10
       };
 
-      return Promise(function (resolve, reject) {
+      return (0, _es6PromisePolyfill.Promise)(function (resolve, reject) {
         _this2._client.receiveMessage(params, function (err, data) {
           if (err) reject(err);else resolve(data.messages);
         });
@@ -74,7 +76,7 @@ var SQSDriver = (function () {
         ReceiptHandle: msg.ReceiptHandle
       };
 
-      return Promise(function (resolve, reject) {
+      return (0, _es6PromisePolyfill.Promise)(function (resolve, reject) {
         _this3._client.deleteMessage(params, function (err, data) {
           if (err) reject(err);else resolve(data);
         });
