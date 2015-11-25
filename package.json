@@ -1,6 +1,6 @@
 {
   "name": "queuepid",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -25,6 +25,7 @@
     "aws-sdk": "^2.2.5",
     "es6-promise-polyfill": "^1.1.1",
     "hat": "0.0.3",
+    "memwatch-next": "^0.2.10",
     "mongodb": "^2.0.44",
     "simplecheck": "0.0.3"
   }
