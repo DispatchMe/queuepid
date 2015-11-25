@@ -39,7 +39,7 @@ var SQSDriver = (function () {
         DelaySeconds: delay
       };
 
-      return (0, _es6PromisePolyfill.Promise)(function (resolve, reject) {
+      return new _es6PromisePolyfill.Promise(function (resolve, reject) {
         _this._client.sendMessage(params, function (err, data) {
           if (err) reject(err);else resolve(data);
         });
@@ -58,7 +58,7 @@ var SQSDriver = (function () {
         WaitTimeSeconds: 10
       };
 
-      return (0, _es6PromisePolyfill.Promise)(function (resolve, reject) {
+      return new _es6PromisePolyfill.Promise(function (resolve, reject) {
         _this2._client.receiveMessage(params, function (err, data) {
           if (err) reject(err);else resolve(data.messages);
         });
@@ -76,7 +76,7 @@ var SQSDriver = (function () {
         ReceiptHandle: msg.ReceiptHandle
       };
 
-      return (0, _es6PromisePolyfill.Promise)(function (resolve, reject) {
+      return new _es6PromisePolyfill.Promise(function (resolve, reject) {
         _this3._client.deleteMessage(params, function (err, data) {
           if (err) reject(err);else resolve(data);
         });
