@@ -126,7 +126,7 @@ var Job = (function (_EventEmitter) {
 
       return new _es6PromisePolyfill.Promise(function (resolve, reject) {
         _this2._collection.update({
-          _id: _this2.info._id
+          _id: new _mongodb.ObjectID(_this2.info._id)
         }, modify, function (err, data) {
           if (err) reject(err);else resolve(data);
         });
@@ -145,7 +145,7 @@ var Job = (function (_EventEmitter) {
 
       return new _es6PromisePolyfill.Promise(function (resolve, reject) {
         _this3._collection.update({
-          _id: _this3.info._id
+          _id: new _mongodb.ObjectID(_this3.info._id)
         }, {
           $set: _this3.info
         }, function (err, data) {
@@ -239,7 +239,7 @@ var Queue = (function () {
       var statusKey = status + 'At';
       return new _es6PromisePolyfill.Promise(function (resolve, reject) {
         _this7._collection.update({
-          _id: msgId
+          _id: new _mongodb.ObjectID(msgId)
         }, _defineProperty({
           status: status
         }, statusKey, Date.now()), function (err, data) {
@@ -254,7 +254,7 @@ var Queue = (function () {
 
       return new _es6PromisePolyfill.Promise(function (resolve, reject) {
         _this8._collection.findOne({
-          _id: msgId
+          _id: new _mongodb.ObjectID(msgId)
         }, function (err, doc) {
           if (err) reject(err);else resolve(doc);
         });
