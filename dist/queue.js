@@ -50,9 +50,11 @@ var Job = (function (_EventEmitter) {
 
       return new _es6PromisePolyfill.Promise(function (resolve, reject) {
         _this._collection.findOne({
-          _id: _this._messageData.jobId
+          _id: new _mongodb.ObjectID(_this._messageData.jobId)
         }, function (err, doc) {
-          if (err) reject(err);else {
+          if (err) reject(err);else if (!doc) {
+            reject(new Error('Job document not found in database!'));
+          } else {
             _this.info = doc;
             resolve(doc);
           }
@@ -89,8 +91,11 @@ var Job = (function (_EventEmitter) {
 
       var removeFromQueue = false;
 
+      // Set the logs no matter what (because we're not running save here, we're doing other stuff)
       var modify = {
-        $set: {}
+        $set: {
+          logs: this.info.logs
+        }
       };
 
       if (err) {

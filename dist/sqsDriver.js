@@ -1,3 +1,4 @@
+/* jshint esnext:true */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -60,7 +61,9 @@ var SQSDriver = (function () {
 
       return new _es6PromisePolyfill.Promise(function (resolve, reject) {
         _this2._client.receiveMessage(params, function (err, data) {
-          if (err) reject(err);else resolve(data.messages);
+          if (err) reject(err);else {
+            resolve(data.Messages || []);
+          }
         });
       });
     }
