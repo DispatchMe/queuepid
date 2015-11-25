@@ -185,7 +185,7 @@ var Queue = (function () {
     (0, _simplecheck.ensure)(driver.write, Function);
     (0, _simplecheck.ensure)(driver.read, Function);
     (0, _simplecheck.ensure)(driver.ack, Function);
-    (0, _simplecheck.ensure)(driver.extend, Function);
+    // ensure(driver.extend, Function);
 
     this._name = name;
     this._cleanName = name.replace(/[^A-Za-z\_]/g, '');
