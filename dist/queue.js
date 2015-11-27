@@ -7,7 +7,7 @@ Object.defineProperty(exports, '__esModule', {
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x3, _x4, _x5) { var _again = true; _function: while (_again) { var object = _x3, property = _x4, receiver = _x5; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x3 = parent; _x4 = property; _x5 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _get = function get(_x3, _x4, _x5) { var _again = true; _function: while (_again) { var object = _x3, property = _x4, receiver = _x5; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x3 = parent; _x4 = property; _x5 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -64,6 +64,9 @@ var Job = (function (_EventEmitter) {
   }, {
     key: 'log',
     value: function log() {
+      if (this.debug) {
+        console.log.apply(console, arguments);
+      }
       // Don't save...it will save when we update the status with any logs that were added.
       this.info.log.push({
         timestamp: new Date(),
@@ -104,7 +107,7 @@ var Job = (function (_EventEmitter) {
 
         modify.$push = {
           'failures': {
-            timestamp: Date.now(),
+            timestamp: new Date(),
             error: err.message
           }
         };
@@ -121,7 +124,7 @@ var Job = (function (_EventEmitter) {
         modify.$set.result = result;
         modify.$set.status = 'done';
         removeFromQueue = true;
-        modify.$set.completedAt = Date.now();
+        modify.$set.completedAt = new Date();
       }
 
       return new _es6PromisePolyfill.Promise(function (resolve, reject) {
@@ -169,7 +172,7 @@ var Job = (function (_EventEmitter) {
           }
         } else {
           _this4.info.status = 'running';
-          _this4.info.startedAt = Date.now();
+          _this4.info.startedAt = new Date();
           return _this4.save();
         }
       }).then(function () {
@@ -184,6 +187,8 @@ var Job = (function (_EventEmitter) {
 
   return Job;
 })(_events.EventEmitter);
+
+exports.Job = Job;
 
 var Queue = (function () {
   function Queue(name, driver, config) {
@@ -242,7 +247,7 @@ var Queue = (function () {
           _id: new _mongodb.ObjectID(msgId)
         }, _defineProperty({
           status: status
-        }, statusKey, Date.now()), function (err, data) {
+        }, statusKey, new Date()), function (err, data) {
           if (err) reject(err);else resolve(data);
         });
       });
@@ -285,7 +290,7 @@ var Queue = (function () {
       return new _es6PromisePolyfill.Promise(function (resolve, reject) {
         _this10._collection.insert({
           data: data,
-          createdAt: Date.now(),
+          createdAt: new Date(),
           status: 'queued',
           retries: 0,
           retryLimit: 10,
@@ -308,4 +313,3 @@ var Queue = (function () {
 })();
 
 exports['default'] = Queue;
-module.exports = exports['default'];

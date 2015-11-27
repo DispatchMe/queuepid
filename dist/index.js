@@ -24,6 +24,7 @@ var _worker2 = _interopRequireDefault(_worker);
 
 var index = {
   Queue: _queue2['default'],
+  Job: _queue.Job,
   SQSDriver: _sqsDriver2['default'],
   MockDriver: _mockDriver2['default'],
   WorkerPool: _worker2['default']
