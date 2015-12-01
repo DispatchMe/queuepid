@@ -67,6 +67,11 @@ var Job = (function (_EventEmitter) {
       if (this.debug) {
         console.log.apply(console, arguments);
       }
+
+      if (!this.info.logs) {
+        this.info.logs = [];
+      }
+
       // Don't save...it will save when we update the status with any logs that were added.
       this.info.logs.push({
         timestamp: new Date(),
