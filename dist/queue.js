@@ -68,7 +68,7 @@ var Job = (function (_EventEmitter) {
         console.log.apply(console, arguments);
       }
       // Don't save...it will save when we update the status with any logs that were added.
-      this.info.log.push({
+      this.info.logs.push({
         timestamp: new Date(),
         message: Array.prototype.slice.call(arguments)
       });
@@ -294,7 +294,7 @@ var Queue = (function () {
           status: 'queued',
           retries: 0,
           retryLimit: 10,
-          log: []
+          logs: []
         }, function (err, data) {
           if (err) reject(err);else {
             id = data.ops[0]._id;
