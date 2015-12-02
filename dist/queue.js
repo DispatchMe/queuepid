@@ -65,7 +65,7 @@ var Job = (function (_EventEmitter) {
     key: 'log',
     value: function log() {
       if (this.debug) {
-        console.log.apply(console, JSON.stringify(arguments));
+        console.log(JSON.stringify(Array.prototype.slice.call(arguments)));
       }
 
       if (!this.info.logs) {
