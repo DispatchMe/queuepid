@@ -73,6 +73,7 @@ var MockDriver = (function () {
       if (timeout) {
         clearTimeout(timeout);
       }
+      return 'acked';
     }
   }, {
     key: 'getData',

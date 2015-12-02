@@ -65,7 +65,7 @@ var Job = (function (_EventEmitter) {
     key: 'log',
     value: function log() {
       if (this.debug) {
-        console.log.apply(console, arguments);
+        console.log.apply(console, JSON.stringify(arguments));
       }
 
       if (!this.info.logs) {
@@ -142,6 +142,20 @@ var Job = (function (_EventEmitter) {
         if (removeFromQueue) {
           return _this2._driver.ack(_this2._message);
         }
+      }).then(function (res) {
+        // Store the results of the ack for now
+        _this2.log('Ack result', res);
+        return new _es6PromisePolyfill.Promise(function (resolve1, reject1) {
+          _this2._collection.update({
+            _id: new _mongodb.ObjectID(_this2.info._id)
+          }, {
+            $set: {
+              logs: _this2.info.logs
+            }
+          }, function (err, data) {
+            if (err) reject1(err);else resolve1(data);
+          });
+        });
       }).then(function () {
         _this2.emit('done');
       });
