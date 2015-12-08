@@ -317,13 +317,15 @@ var Queue = (function () {
         }, function (err, data) {
           if (err) reject(err);else {
             id = data.ops[0]._id;
-            resolve(id);
+            resolve();
           }
         });
       }).then(function () {
         return _this10._driver.write({
           jobId: id
         }, delay);
+      }).then(function () {
+        return id;
       });
     }
   }]);
