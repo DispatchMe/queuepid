@@ -317,7 +317,7 @@ var Queue = (function () {
         }, function (err, data) {
           if (err) reject(err);else {
             id = data.ops[0]._id;
-            resolve();
+            resolve(id);
           }
         });
       }).then(function () {

@@ -15,6 +15,11 @@ function _inherits(subClass, superClass) { if (typeof superClass !== 'function' 
 
 var _events = require('events');
 
+var STATE_IDLE = 'idle';
+var STATE_POLLING = 'polling';
+var STATE_HANDLING = 'handling';
+var STATE_STOPPED = 'stopped';
+
 var WorkerPool = (function (_EventEmitter) {
   _inherits(WorkerPool, _EventEmitter);
 
@@ -59,10 +64,16 @@ var Worker = (function () {
     this.handler = handler;
     this.pool = pool;
 
+    this._setState(STATE_IDLE);
     this._wait = pool.config.wait ? pool.config.wait : 500;
   }
 
   _createClass(Worker, [{
+    key: '_setState',
+    value: function _setState(state) {
+      this._state = state;
+    }
+  }, {
     key: 'start',
     value: function start() {
       this._stop = false;
@@ -78,8 +89,9 @@ var Worker = (function () {
     value: function loop() {
       var _this = this;
 
+      this._setState(STATE_IDLE);
       setTimeout(function () {
-        return _this.poll();
+        _this.poll();
       }, this._wait);
     }
   }, {
@@ -90,14 +102,19 @@ var Worker = (function () {
       if (this._stop === true) {
         return;
       }
+
+      var handleDone = function handleDone() {
+        _this2.loop();
+      };
+
+      this._setState(STATE_POLLING);
       this.queue.getMessage().then(function (job) {
         if (job) {
+          _this2._setState(STATE_HANDLING);
           if (_this2.pool.config.debug === true) {
             job.debug = true;
           }
-          job.on('done', function () {
-            return _this2.loop();
-          });
+          job.on('done', handleDone);
           _this2.handler(job);
         } else {
           _this2.loop();
