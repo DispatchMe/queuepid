@@ -114,7 +114,7 @@ var Worker = (function () {
           if (_this2.pool.config.debug === true) {
             job.debug = true;
           }
-          job.on('done', handleDone);
+          job.once('done', handleDone);
           _this2.handler(job);
         } else {
           _this2.loop();

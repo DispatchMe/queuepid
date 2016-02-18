@@ -153,7 +153,14 @@ var Job = (function (_EventEmitter) {
               logs: _this2.info.logs
             }
           }, function (err, data) {
-            if (err) reject1(err);else resolve1(data);
+            if (err) {
+              // There might be a bug that resolves this promise twice sometimes - need to
+              // add logging to debug.
+              _this2.log('Failed to update', err.message);
+              reject1(err);
+            } else {
+              resolve1(data);
+            }
           });
         });
       }).then(function () {
@@ -185,8 +192,9 @@ var Job = (function (_EventEmitter) {
         // It can either be "queued" or "running" (if it timed out)
         if (meta.status !== 'queued' && meta.status !== 'running') {
           ok = false;
-          if (meta.status === 'canceled') {
-            // Cancel it!
+          if (meta.status === 'canceled' || 'done') {
+            // Cancel it! If it's "done", that means the queue delivered a duplicate message, so we
+            // need to ack it again (??) and do nothing else.
             return _this4._driver.ack(_this4._message);
           }
         } else {
