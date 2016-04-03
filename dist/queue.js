@@ -306,15 +306,38 @@ var Queue = (function () {
         });
       });
     }
+
+    /**
+     * Returns a single message document based on metadata within that message
+     * Useful for doing lookups when you don't have the message ID
+     * @param  {Objet} meta The metadata
+     * @return {Promise<Doc>}
+     */
+  }, {
+    key: 'getInfoFromMeta',
+    value: function getInfoFromMeta(meta) {
+      var _this9 = this;
+
+      var parsed = {};
+      for (var k in meta) {
+        parsed['metadata.' + k] = meta[k];
+      }
+
+      return new _es6PromisePolyfill.Promise(function (resolve, reject) {
+        _this9._collection.findOne(parsed, function (err, doc) {
+          if (err) reject(err);else resolve(doc);
+        });
+      });
+    }
   }, {
     key: 'getMessage',
     value: function getMessage() {
-      var _this9 = this;
+      var _this10 = this;
 
       var job = undefined;
       return this._driver.read(1).then(function (messages) {
         if (messages.length > 0) {
-          job = new Job(_this9._collection, _this9._driver, messages[0]);
+          job = new Job(_this10._collection, _this10._driver, messages[0]);
           return job.start();
         } else {
           return null;
@@ -324,12 +347,12 @@ var Queue = (function () {
   }, {
     key: 'sendMessage',
     value: function sendMessage(data, delay) {
-      var _this10 = this;
+      var _this11 = this;
 
       var id = undefined;
       // Insert into the jobs collection...
       return new _es6PromisePolyfill.Promise(function (resolve, reject) {
-        _this10._collection.insert({
+        _this11._collection.insert({
           data: data,
           createdAt: new Date(),
           status: 'queued',
@@ -343,7 +366,7 @@ var Queue = (function () {
           }
         });
       }).then(function () {
-        return _this10._driver.write({
+        return _this11._driver.write({
           jobId: id
         }, delay);
       }).then(function () {
