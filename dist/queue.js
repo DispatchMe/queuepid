@@ -42,8 +42,8 @@ var Job = (function (_EventEmitter) {
       return this._message;
     }
   }, {
-    key: 'getMeta',
-    value: function getMeta() {
+    key: 'getInfo',
+    value: function getInfo() {
       var _this = this;
 
       if (this.info) return _es6PromisePolyfill.Promise.resolve(this.info);
@@ -60,6 +60,17 @@ var Job = (function (_EventEmitter) {
           }
         });
       });
+    }
+
+    // Allows storing arbitrary metadata on the msg
+  }, {
+    key: 'setMetaData',
+    value: function setMetaData(key, val) {
+      if (!this.info.metadata) {
+        this.info.metadata = {};
+      }
+
+      this.info.metadata[key] = val;
     }
   }, {
     key: 'log',
@@ -102,7 +113,8 @@ var Job = (function (_EventEmitter) {
       // Set the logs no matter what (because we're not running save here, we're doing other stuff)
       var modify = {
         $set: {
-          logs: this.info.logs
+          logs: this.info.logs,
+          metadata: this.info.metadata
         }
       };
 
@@ -188,11 +200,11 @@ var Job = (function (_EventEmitter) {
       var _this4 = this;
 
       var ok = true;
-      return this.getMeta().then(function (meta) {
+      return this.getInfo().then(function (info) {
         // It can either be "queued" or "running" (if it timed out)
-        if (meta.status !== 'queued' && meta.status !== 'running') {
+        if (info.status !== 'queued' && info.status !== 'running') {
           ok = false;
-          if (meta.status === 'canceled' || 'done') {
+          if (info.status === 'canceled' || 'done') {
             // Cancel it! If it's "done", that means the queue delivered a duplicate message, so we
             // need to ack it again (??) and do nothing else.
             return _this4._driver.ack(_this4._message);
@@ -272,16 +284,18 @@ var Queue = (function () {
       return new _es6PromisePolyfill.Promise(function (resolve, reject) {
         _this7._collection.update({
           _id: new _mongodb.ObjectID(msgId)
-        }, _defineProperty({
-          status: status
-        }, statusKey, new Date()), function (err, data) {
+        }, {
+          $set: _defineProperty({
+            status: status
+          }, statusKey, new Date())
+        }, function (err, data) {
           if (err) reject(err);else resolve(data);
         });
       });
     }
   }, {
-    key: 'getMeta',
-    value: function getMeta(msgId) {
+    key: 'getInfo',
+    value: function getInfo(msgId) {
       var _this8 = this;
 
       return new _es6PromisePolyfill.Promise(function (resolve, reject) {
