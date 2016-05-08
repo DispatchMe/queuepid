@@ -337,12 +337,17 @@ var Queue = (function () {
       var job = undefined;
       return this._driver.read(1).then(function (messages) {
         if (messages.length > 0) {
-          job = new Job(_this10._collection, _this10._driver, messages[0]);
-          return job.start();
+          return _this10.processMessage(messages[0]);
         } else {
           return null;
         }
       });
+    }
+  }, {
+    key: 'processMessage',
+    value: function processMessage(msg) {
+      var job = new Job(this._collection, this._driver, msg);
+      return job.start();
     }
   }, {
     key: 'sendMessage',
