@@ -396,7 +396,7 @@ var Queue = (function () {
         _this12._collection.insert({
           data: data,
           createdAt: new Date(),
-          status: 'queued',
+          status: 'delayed',
           retries: 0,
           retryLimit: 10,
           logs: [],
@@ -450,7 +450,7 @@ var Queue = (function () {
       var _this14 = this;
 
       var query = {
-        status: 'queued',
+        status: 'delayed',
         sendAfter: { $lte: new Date() }
       };
 
@@ -458,6 +458,8 @@ var Queue = (function () {
 
       this._collection.find(query).toArray(function (err, jobs) {
         _es6PromisePolyfill.Promise.all(jobs.map(function (job) {
+          // update the job status
+          _this14._collection.update({ _id: job._id }, { $set: { status: 'queued' } });
           _this14._driver.write({ jobId: job._id });
         })).then(function () {
           deferred.resolve();
