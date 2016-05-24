@@ -7,7 +7,7 @@ Object.defineProperty(exports, '__esModule', {
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x4, _x5, _x6) { var _again = true; _function: while (_again) { var object = _x4, property = _x5, receiver = _x6; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x4 = parent; _x5 = property; _x6 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _get = function get(_x6, _x7, _x8) { var _again = true; _function: while (_again) { var object = _x6, property = _x7, receiver = _x8; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x6 = parent; _x7 = property; _x8 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -22,6 +22,9 @@ var _mongodb = require('mongodb');
 var _events = require('events');
 
 var _es6PromisePolyfill = require('es6-promise-polyfill');
+
+var later = require('later');
+var defer = require("promise-defer");
 
 var Job = (function (_EventEmitter) {
   _inherits(Job, _EventEmitter);
@@ -245,15 +248,24 @@ var Queue = (function () {
   }
 
   _createClass(Queue, [{
-    key: 'connect',
-    value: function connect() {
+    key: 'startInterval',
+    value: function startInterval(interval) {
       var _this5 = this;
 
+      this.checker = later.setInterval(function () {
+        return _this5.sendDelayedMessages();
+      }, later.parse.text(interval));
+    }
+  }, {
+    key: 'connect',
+    value: function connect() {
+      var _this6 = this;
+
       return new _es6PromisePolyfill.Promise(function (resolve, reject) {
-        _mongodb.MongoClient.connect(_this5.config.mongoUrl, function (err, db) {
+        _mongodb.MongoClient.connect(_this6.config.mongoUrl, function (err, db) {
           if (err) reject(err);else {
-            _this5._db = db;
-            _this5._collection = db.collection(_this5._cleanName + '_jobs');
+            _this6._db = db;
+            _this6._collection = db.collection(_this6._cleanName + '_jobs');
             resolve();
           }
         });
@@ -267,10 +279,10 @@ var Queue = (function () {
   }, {
     key: 'purge',
     value: function purge() {
-      var _this6 = this;
+      var _this7 = this;
 
       return new _es6PromisePolyfill.Promise(function (resolve, reject) {
-        _this6._collection.remove({}, function (err) {
+        _this7._collection.remove({}, function (err) {
           if (err) reject(err);else resolve();
         });
       });
@@ -278,11 +290,11 @@ var Queue = (function () {
   }, {
     key: 'setStatus',
     value: function setStatus(msgId, status) {
-      var _this7 = this;
+      var _this8 = this;
 
       var statusKey = status + 'At';
       return new _es6PromisePolyfill.Promise(function (resolve, reject) {
-        _this7._collection.update({
+        _this8._collection.update({
           _id: new _mongodb.ObjectID(msgId)
         }, {
           $set: _defineProperty({
@@ -296,10 +308,10 @@ var Queue = (function () {
   }, {
     key: 'getInfo',
     value: function getInfo(msgId) {
-      var _this8 = this;
+      var _this9 = this;
 
       return new _es6PromisePolyfill.Promise(function (resolve, reject) {
-        _this8._collection.findOne({
+        _this9._collection.findOne({
           _id: new _mongodb.ObjectID(msgId)
         }, function (err, doc) {
           if (err) reject(err);else resolve(doc);
@@ -316,7 +328,7 @@ var Queue = (function () {
   }, {
     key: 'getInfoFromMeta',
     value: function getInfoFromMeta(meta) {
-      var _this9 = this;
+      var _this10 = this;
 
       var parsed = {};
       for (var k in meta) {
@@ -324,7 +336,7 @@ var Queue = (function () {
       }
 
       return new _es6PromisePolyfill.Promise(function (resolve, reject) {
-        _this9._collection.findOne(parsed, function (err, doc) {
+        _this10._collection.findOne(parsed, function (err, doc) {
           if (err) reject(err);else resolve(doc);
         });
       });
@@ -332,12 +344,12 @@ var Queue = (function () {
   }, {
     key: 'getMessage',
     value: function getMessage() {
-      var _this10 = this;
+      var _this11 = this;
 
       var job = undefined;
       return this._driver.read(1).then(function (messages) {
         if (messages.length > 0) {
-          return _this10.processMessage(messages[0]);
+          return _this11.processMessage(messages[0]);
         } else {
           return null;
         }
@@ -349,17 +361,68 @@ var Queue = (function () {
       var job = new Job(this._collection, this._driver, msg);
       return job.start();
     }
+
+    // Incoming messages get sent either now or later based on sendAfter
   }, {
     key: 'sendMessage',
     value: function sendMessage(data, delay) {
-      var _this11 = this;
+      var metadata = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+
+      if (data.payload && data.payload.sendAfter) {
+        var now = new Date();
+
+        // Parse sendAfter as a date
+        data.payload.sendAfter = new Date(data.payload.sendAfter);
+
+        if (data.payload.sendAfter.getTime() < now) {
+          return this.sendMessageNow(data, delay, metadata = {});
+        } else {
+          return this.sendMessageLater(data, metadata = {});
+        }
+      } else {
+        return this.sendMessageNow(data, delay, metadata = {});
+      }
+    }
+  }, {
+    key: 'sendMessageLater',
+    value: function sendMessageLater(data) {
+      var _this12 = this;
+
+      var metadata = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+      var id = undefined;
+      // Insert into the jobs collection...
+      return new _es6PromisePolyfill.Promise(function (resolve, reject) {
+        _this12._collection.insert({
+          data: data,
+          createdAt: new Date(),
+          status: 'queued',
+          retries: 0,
+          retryLimit: 10,
+          logs: [],
+          sendAfter: data.payload.sendAfter,
+          metadata: metadata
+        }, function (err, data) {
+          if (err) reject(err);else {
+            id = data.ops[0]._id;
+            resolve();
+          }
+        });
+      }).then(function () {
+        return id;
+      });
+    }
+  }, {
+    key: 'sendMessageNow',
+    value: function sendMessageNow(data, delay) {
+      var _this13 = this;
 
       var metadata = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
       var id = undefined;
       // Insert into the jobs collection...
       return new _es6PromisePolyfill.Promise(function (resolve, reject) {
-        _this11._collection.insert({
+        _this13._collection.insert({
           data: data,
           createdAt: new Date(),
           status: 'queued',
@@ -374,12 +437,34 @@ var Queue = (function () {
           }
         });
       }).then(function () {
-        return _this11._driver.write({
+        return _this13._driver.write({
           jobId: id
         }, delay);
       }).then(function () {
         return id;
       });
+    }
+  }, {
+    key: 'sendDelayedMessages',
+    value: function sendDelayedMessages() {
+      var _this14 = this;
+
+      var query = {
+        status: 'queued',
+        sendAfter: { $lte: new Date() }
+      };
+
+      var deferred = defer();
+
+      this._collection.find(query).toArray(function (err, jobs) {
+        _es6PromisePolyfill.Promise.all(jobs.map(function (job) {
+          _this14._driver.write({ jobId: job._id });
+        })).then(function () {
+          deferred.resolve();
+        });
+      });
+
+      return deferred.promise;
     }
   }]);
 
