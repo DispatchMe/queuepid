@@ -24,7 +24,6 @@ var _events = require('events');
 var _es6PromisePolyfill = require('es6-promise-polyfill');
 
 var later = require('later');
-var defer = require("promise-defer");
 
 var Job = (function (_EventEmitter) {
   _inherits(Job, _EventEmitter);
@@ -454,19 +453,24 @@ var Queue = (function () {
         sendAfter: { $lte: new Date() }
       };
 
-      var deferred = defer();
-
-      this._collection.find(query).toArray(function (err, jobs) {
-        _es6PromisePolyfill.Promise.all(jobs.map(function (job) {
-          // update the job status
-          _this14._collection.update({ _id: job._id }, { $set: { status: 'queued' } });
-          _this14._driver.write({ jobId: job._id });
-        })).then(function () {
-          deferred.resolve();
+      return new _es6PromisePolyfill.Promise(function (resolve, reject) {
+        _this14._collection.find(query).toArray(function (err, jobs) {
+          if (err) {
+            reject(err);
+          } else {
+            var ids = jobs.map(function (job) {
+              return job._id;
+            });
+            _this14._collection.update({ _id: { $in: ids } }, { $set: { status: 'queued' } }, { multi: true });
+            _es6PromisePolyfill.Promise.all(jobs.map(function (job) {
+              // update the job status to queued and queue message
+              _this14._driver.write({ jobId: job._id });
+            })).then(function () {
+              resolve();
+            })['catch'](reject);
+          }
         });
       });
-
-      return deferred.promise;
     }
   }]);
 
