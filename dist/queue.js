@@ -374,12 +374,12 @@ var Queue = (function () {
         data.payload.sendAfter = new Date(data.payload.sendAfter);
 
         if (data.payload.sendAfter.getTime() < now) {
-          return this.sendMessageNow(data, delay, metadata = {});
+          return this.sendMessageNow(data, delay, metadata);
         } else {
-          return this.sendMessageLater(data, metadata = {});
+          return this.sendMessageLater(data, metadata);
         }
       } else {
-        return this.sendMessageNow(data, delay, metadata = {});
+        return this.sendMessageNow(data, delay, metadata);
       }
     }
   }, {
